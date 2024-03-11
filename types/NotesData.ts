@@ -1,8 +1,6 @@
-interface INotesData extends Array<Array<INoteData>> {}
-interface INoteData {
+export interface INoteData {
   note: string;
   octave: string;
-  class: string;
 }
 
-export default INotesData;
+export type NotesData = INoteData[][];

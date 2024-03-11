@@ -1,102 +1,85 @@
-import { useEffect, useState } from "react"
-import Tab from './Tab'
-import INotesData from '../types/NotesData'
-import { Container, Box, Wrap, Divider } from '@chakra-ui/react'
+import React, { useEffect, useState } from "react";
+import Tab from "./Tab";
+import { Box, Wrap, Divider } from "@chakra-ui/react";
+import { NotesData } from "../types/NotesData";
 
 interface TabsProps {
-  data: string,
-  notesVisible: boolean,
-  spacing: number,
+  data: string;
+  notesVisible: boolean;
+  horizontalSpacing: number;
+  verticalSpacing: number;
+  tabSize: number;
 }
 
-const Tabs: React.FC<TabsProps> = ({data, notesVisible, spacing}) => {
-  const [ notes, setNotes ] = useState(['']);
-  const [ notesData, setNotesData ] = useState<INotesData>([]);
+const Tabs: React.FC<TabsProps> = ({ data, notesVisible, verticalSpacing, horizontalSpacing, tabSize }) => {
+  const [notesData, setNotesData] = useState<NotesData>([]);
 
-  useEffect(() => {
-    const tabs = data.match(/([a-g][#]?[+]{0,2})|(?:[\s\n])/ig) ?? [];
-    if(JSON.stringify(tabs) !== JSON.stringify(notes)) {
-      // Set the individual notes into an array so they can be checked in
-      // above if statement next time there's a change
-      setNotes(tabs);
-    }
-  }), [];
+  const parseTabs = (data: string): NotesData => {
+    const tabsData: NotesData = [];
+    const lines = data.split("\n");
 
-  useEffect(() => {
-    // Separate the notes an add classes to each
-    let tabsData: INotesData = [[]];
-    let currentTabLine: number = 0;
+    lines.forEach((line, lineIndex) => {
+      if (line.trim().startsWith("//")) return; // Skip comment lines
 
-    // Loop through each of the tabs and extract data for each one
-    if(notes.length > 0) {
-      notes.forEach((note, idx) => {
-        let tabNote = note.match(/^([a-g][#]?)|(\n)|( )/i) ?? [''];
-        const tabOctave = note.match(/([+]{0,2})$/i) ?? [''];
-        let tabClass = '';
+      const notesInLine = line.match(/([a-g][#]?[+]{0,2})|[-\s]/gi) ?? [];
+      const lineData = notesInLine.map((note) => {
+        const tabNote = note.match(/^([a-gA-G][#]?)|(-)|( )/i) ?? [""];
+        const tabOctave = note.match(/([+]{0,2})$/i) ?? [""];
 
-        if(tabNote[0] === " ") {
-          tabClass = 'spacer';
-        } else if(tabNote[0] != "\n") {
-          tabClass = tabNote[0].replace('#', '');
+        let noteValue = tabNote[0];
+        let octaveValue = tabOctave[0];
 
-          // Handle sharp note
-          if(/#/.test(note)) {
-            tabClass += '-sharp';
-          }
-          
-          // Handle higher octaves
-          if(tabOctave[0] === '+') {
-            tabClass += '-plus';
-            tabNote[0] = tabNote[0].toUpperCase();
-          } else if(tabOctave[0] === '++') {
-            tabClass += '-plus-plus';
-            tabNote[0] = tabNote[0].toUpperCase();
-          } else {
-            tabNote[0] = tabNote[0].toLowerCase();
-          }
-        } else {
-          currentTabLine++;
-          tabsData[currentTabLine] = [];
-          return;
+        if (noteValue === " ") {
+          noteValue = "spacer";
+          octaveValue = "";
+        } else if (noteValue === "-") {
+          noteValue = "slur";
+          octaveValue = "";
+        } else if (noteValue.toUpperCase() === noteValue) {
+          noteValue = noteValue.toLowerCase();
+          octaveValue = octaveValue ? "++" : "+";
         }
 
-        tabsData[currentTabLine].push({
-          note: tabNote[0],
-          octave: tabOctave[0],
-          class: tabClass,
-        });
+        return { note: noteValue, octave: octaveValue };
+      });
 
-        setNotesData(tabsData);
-      })
-    } else {
-      setNotesData([]);
-    }
-  }, [ notes ]);
+      tabsData[lineIndex] = lineData;
+    });
+
+    return tabsData;
+  };
+
+  useEffect(() => {
+    const parsedNotesData = parseTabs(data);
+    setNotesData(parsedNotesData);
+  }, [data]);
 
   return (
-    <>
-      { notes.length > 0 ?
-        <Container maxW="container.lg">
-          <Box bg="white" shadow="md" mt={8} borderRadius="md" p={8}>
-            <Wrap spacing="0">
-              { notesData.map( (lines, idx) => {
-                return ( 
-                  <>
-                    { Object.keys(lines).map( (note, idx) => {
-                      return (
-                        <Tab key={idx} data={lines[note]} spacing={spacing} notesVisible={notesVisible} />
-                      )
-                    })}
-                    <Divider width="100%" borderColor="transparent" marginTop="10px" marginBottom="10px" />
-                  </>
-                )
-              }) }
-            </Wrap>
-          </Box>
-        </Container>
-      : '' }
-    </>
-  )
-}
+    <Box p={50}>
+      <Wrap spacing="0">
+        {notesData.length > 0 ? (
+          notesData.map((line, idx) => (
+            <React.Fragment key={idx}>
+              {line.map((noteData, noteIdx) => (
+                <Tab
+                  key={noteIdx}
+                  data={noteData}
+                  horizontalSpacing={horizontalSpacing}
+                  verticalSpacing={verticalSpacing}
+                  notesVisible={notesVisible}
+                  tabSize={tabSize}
+                  whistleKey="D"
+                />
+              ))}
+              <Divider width="100%" borderColor="transparent" marginTop="10px" marginBottom="10px" />
+            </React.Fragment>
+          ))
+        ) : (
+          <p>No notes to display</p>
+        )}
+      </Wrap>
+    </Box>
+  );
+};
 
 export default Tabs;
