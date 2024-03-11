@@ -29,7 +29,7 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [tabs, setTabs] = useState("");
   const [notesVisible, setNotesVisible] = useState(false);
-  const [tabSize, setTabSize] = useState(50);
+  const [tabSize, setTabSize] = useState(10);
   const [verticalSpacing, setVerticalSpacing] = useState(30);
   const [horizontalSpacing, setHorizontalSpacing] = useState(5);
 
@@ -107,8 +107,7 @@ export default function Home() {
               spacing="5"
               mt={3}
               alignItems="center"
-              divider={<StackDivider borderColor="whiteAlpha.400" />}
-              shouldWrapChildren={false}
+              // divider={<StackDivider borderColor="whiteAlpha.400" />}
             >
               <StackItem>
                 <FormControl display="flex" alignItems="center">
@@ -170,7 +169,7 @@ export default function Home() {
                   colorScheme="yellow"
                   defaultValue={tabSize}
                   min={10}
-                  max={70}
+                  max={20}
                   width="100%"
                   onChange={(val) => setTabSize(val)}
                   focusThumbOnChange={false}

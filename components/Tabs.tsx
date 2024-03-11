@@ -18,7 +18,7 @@ const Tabs: React.FC<TabsProps> = ({ data, notesVisible, verticalSpacing, horizo
     const tabsData: NotesData = [];
     const lines = data.split("\n");
 
-    lines.forEach((line, lineIndex) => {
+    lines.forEach((line: string, lineIndex: number) => {
       if (line.trim().startsWith("//")) return; // Skip comment lines
 
       const notesInLine = line.match(/([a-g][#]?[+]{0,2})|[-\s]/gi) ?? [];

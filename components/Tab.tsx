@@ -1,4 +1,4 @@
-import INoteData from "../types/NotesData";
+import { INoteData } from "../types/NotesData";
 import { Text, WrapItem, Box, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { tinWhistleTabsByKey } from "../constants/tinWhistleTabsByKey";
