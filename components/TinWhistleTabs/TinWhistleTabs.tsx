@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from "react";
-import Tab from "./Tab";
-import { Box, Wrap, Divider } from "@chakra-ui/react";
-import { NotesData } from "../types/NotesData";
+import Tab from "./TinWhistleTab";
+import { Box, Wrap, Divider, ScaleFade } from "@chakra-ui/react";
+import { NotesData } from "../../types/NotesData";
 
 interface TabsProps {
   data: string;
-  notesVisible: boolean;
+  isNotesVisible: boolean;
+  isLyricsVisible: boolean;
   horizontalSpacing: number;
   verticalSpacing: number;
   tabSize: number;
 }
 
-const Tabs: React.FC<TabsProps> = ({ data, notesVisible, verticalSpacing, horizontalSpacing, tabSize }) => {
+const TinWhistleTabs: React.FC<TabsProps> = ({
+  data,
+  isNotesVisible,
+  isLyricsVisible,
+  verticalSpacing,
+  horizontalSpacing,
+  tabSize,
+}) => {
   const [notesData, setNotesData] = useState<NotesData>([]);
 
   const parseTabs = (data: string): NotesData => {
@@ -55,21 +63,24 @@ const Tabs: React.FC<TabsProps> = ({ data, notesVisible, verticalSpacing, horizo
   }, [data]);
 
   return (
-    <Box p={50}>
+    <Box p={50} pb={0}>
       <Wrap spacing="0">
         {notesData.length > 0 ? (
           notesData.map((line, idx) => (
             <React.Fragment key={idx}>
               {line.map((noteData, noteIdx) => (
-                <Tab
-                  key={noteIdx}
-                  data={noteData}
-                  horizontalSpacing={horizontalSpacing}
-                  verticalSpacing={verticalSpacing}
-                  notesVisible={notesVisible}
-                  tabSize={tabSize}
-                  whistleKey="D"
-                />
+                <ScaleFade initialScale={0.5} in={true}>
+                  <Tab
+                    key={noteIdx}
+                    data={noteData}
+                    horizontalSpacing={horizontalSpacing}
+                    verticalSpacing={verticalSpacing}
+                    isNotesVisible={isNotesVisible}
+                    isLyricsVisible={isLyricsVisible}
+                    tabSize={tabSize}
+                    whistleKey="D"
+                  />
+                </ScaleFade>
               ))}
               <Divider width="100%" borderColor="transparent" marginTop="10px" marginBottom="10px" />
             </React.Fragment>
@@ -82,4 +93,4 @@ const Tabs: React.FC<TabsProps> = ({ data, notesVisible, verticalSpacing, horizo
   );
 };
 
-export default Tabs;
+export default TinWhistleTabs;

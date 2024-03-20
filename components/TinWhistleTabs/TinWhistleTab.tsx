@@ -1,11 +1,12 @@
-import { INoteData } from "../types/NotesData";
+import { INoteData } from "../../types/NotesData";
 import { Text, WrapItem, Box, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { tinWhistleTabsByKey } from "../constants/tinWhistleTabsByKey";
+import { tinWhistleTabsByKey } from "../../constants/tinWhistleTabsByKey";
 
 interface TabProps {
   data: INoteData;
-  notesVisible: boolean;
+  isNotesVisible: boolean;
+  isLyricsVisible: boolean;
   verticalSpacing: number;
   horizontalSpacing: number;
   tabSize: number;
@@ -17,7 +18,15 @@ interface INote {
   description: string;
 }
 
-const Tab: React.FC<TabProps> = ({ data, notesVisible, horizontalSpacing, verticalSpacing, tabSize, whistleKey }) => {
+const TinWhistleTab: React.FC<TabProps> = ({
+  data,
+  isNotesVisible,
+  isLyricsVisible,
+  horizontalSpacing,
+  verticalSpacing,
+  tabSize,
+  whistleKey,
+}) => {
   const [fingerPositions, setFingerPositions] = useState<Array<number>>([]);
 
   useEffect(() => {
@@ -65,12 +74,12 @@ const Tab: React.FC<TabProps> = ({ data, notesVisible, horizontalSpacing, vertic
                     </>
                   ))}
                 </VStack>
-                {notesVisible && (
+                {isNotesVisible && (
                   <VStack>
                     <Text fontSize="xs" height={2} mb={-1} position="absolute">
                       {data.octave}
                     </Text>
-                    <Text fontSize="xs" height="20px">
+                    <Text fontSize="xs" height="20px" mt={3}>
                       {data.octave.length > 0 ? data.note.toUpperCase() : data.note}
                     </Text>
                   </VStack>
@@ -84,4 +93,4 @@ const Tab: React.FC<TabProps> = ({ data, notesVisible, horizontalSpacing, vertic
   );
 };
 
-export default Tab;
+export default TinWhistleTab;
