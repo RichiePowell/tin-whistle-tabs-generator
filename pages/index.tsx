@@ -15,20 +15,13 @@ import {
   Link,
   Button,
   Box,
-  useToast,
   Card,
   InputGroup,
   ScaleFade,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import ResizeTextarea from "react-textarea-autosize";
 import TinWhistleTabs from "../components/TinWhistleTabs/TinWhistleTabs";
-import scarboroughFair from "../data/scarborough-fair.json";
-import myHeartWillGoOn from "../data/my-heart-will-go-on.json";
-import drunkenSailor from "../data/drunken-sailor.json";
-import greensleeves from "../data/greensleeves.json";
-import hallelujah from "../data/hallelujah.json";
-import concerningHobbits from "../data/concerning-hobbits.json";
 import {
   SlMagnifier,
   SlCloudDownload,
@@ -40,137 +33,47 @@ import {
   SlRefresh,
 } from "react-icons/sl";
 import { PanelTab } from "../components/Settings/PanelTab";
-import { ITabs } from "../types/Tabs";
-import { ISavedTabs } from "../types/SavedTabs";
 import ReactToPrint from "react-to-print";
 import { SquigglyArrow } from "../components/SquigglyArrow";
 import { PanelRangeSlider } from "../components/Settings/PanelRangeSlider";
 import { PanelSwitch } from "../components/Settings/PanelSwitch";
+import { TabsCreatorContext } from "../context/TabsCreatorContext";
 
 export default function Home() {
-  const [title, setTitle] = useState("");
-  const [tabs, setTabs] = useState("");
-  const [currentTabId, setCurrentTabId] = useState<number | null>(null);
-  const [isLyricsVisible, setIsLyricsVisible] = useState(false);
-  const [isNotesVisible, setIsNotesVisible] = useState(false);
-  const [tabSize, setTabSize] = useState(10);
-  const [verticalSpacing, setVerticalSpacing] = useState(30);
-  const [horizontalSpacing, setHorizontalSpacing] = useState(5);
-  const [clearConfirm, setClearConfirm] = useState(false);
-  const [savedTabs, setSavedTabs] = useState<ISavedTabs[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const toast = useToast();
-  const preMadeTabs: ITabs[] = [
-    scarboroughFair,
-    myHeartWillGoOn,
-    hallelujah,
-    greensleeves,
-    drunkenSailor,
-    concerningHobbits,
-  ];
   const ref = React.useRef<HTMLDivElement>(null);
+  const {
+    title,
+    setTitle,
+    tabs,
+    setTabs,
+    savedTabs,
+    addNewSavedTabs,
+    currentTabId,
+    updateSavedTabs,
+    deleteSavedTabs,
+    loadSavedTabs,
+    preMadeTabs,
+    changeTabs,
+    canSaveTabs,
+    canSaveNewTabs,
+    isNotesVisible,
+    isLyricsVisible,
+    tabSize,
+    setTabSize,
+    verticalSpacing,
+    setVerticalSpacing,
+    horizontalSpacing,
+    setHorizontalSpacing,
+    toggleIsNotesVisible,
+    toggleIsLyricsVisible,
+    handleClearConfirmation,
+    showClearConfirmation,
+  } = useContext(TabsCreatorContext);
 
-  const handlePreMadeTabsSearch = (e) => {
+  const handlePreMadeTabsSearch = (e: React.ChangeEvent<HTMLInputElement>) =>
     setSearchTerm(e.target.value.toLowerCase());
-  };
-
-  const clearPreMadeTabsSearch = () => {
-    setSearchTerm("");
-  };
-
-  useEffect(() => {
-    const savedTabs = localStorage.getItem("savedTabs") ? JSON.parse(localStorage.getItem("savedTabs")!) : [];
-    setSavedTabs(savedTabs);
-  }, []);
-
-  useEffect(() => setClearConfirm(false), [title, tabs]);
-
-  const toggleIsNotesVisible = () => setIsNotesVisible((isNotesVisible) => !isNotesVisible);
-  const toggleIsLyricsVisible = () => setIsLyricsVisible((isLyricsVisible) => !isLyricsVisible);
-
-  const changeTabs = (tabs: ITabs) => () => {
-    setTitle(tabs.title);
-    setTabs(tabs.tabs);
-    setCurrentTabId(null);
-  };
-
-  const canSaveTabs = () => title !== "" || tabs !== "";
-
-  const canSaveNewTabs = () => {
-    if (canSaveTabs() && currentTabId) {
-      const tab = savedTabs.find((tab: { id: number }) => tab.id === currentTabId);
-      if (tab && (tab.title !== title || tab.tabs !== tabs)) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const addNewSavedTabs = () => {
-    const newTab = { id: Date.now(), title, tabs };
-    localStorage.setItem("savedTabs", JSON.stringify([...savedTabs, newTab]));
-    setSavedTabs([...savedTabs, newTab]);
-    setCurrentTabId(newTab.id);
-    toast({
-      title: "Successfully saved tabs" + (title ? " for " + title : ""),
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-      position: "bottom-right",
-    });
-  };
-
-  const updateSavedTabs = () => {
-    const savedTabs = localStorage.getItem("savedTabs") ? JSON.parse(localStorage.getItem("savedTabs")!) : [];
-    const newSavedTabs = savedTabs.map((tab: { id: number; title: string; tabs: string }) => {
-      if (tab.id === currentTabId) {
-        tab.title = title;
-        tab.tabs = tabs;
-      }
-      return tab;
-    });
-    localStorage.setItem("savedTabs", JSON.stringify(newSavedTabs));
-    setSavedTabs(newSavedTabs);
-    toast({
-      title: "Successfully updated tabs" + (title ? " for " + title : ""),
-      status: "success",
-      position: "bottom-right",
-    });
-  };
-
-  const loadSavedTabs = (id: number) => () => {
-    const savedTabs = localStorage.getItem("savedTabs") ? JSON.parse(localStorage.getItem("savedTabs")!) : [];
-    const tab = savedTabs.find((tab: { id: number }) => tab.id === id);
-    setTitle(tab.title);
-    setTabs(tab.tabs);
-    setCurrentTabId(tab.id);
-  };
-
-  const deleteSavedTabs = (id: number) => () => {
-    const savedTabs = localStorage.getItem("savedTabs") ? JSON.parse(localStorage.getItem("savedTabs")!) : [];
-    const newSavedTabs = savedTabs.filter((tab: { id: number }) => tab.id !== id);
-    localStorage.setItem("savedTabs", JSON.stringify(newSavedTabs));
-    setSavedTabs(newSavedTabs);
-    if (id === currentTabId) {
-      setTitle("");
-      setTabs("");
-      setCurrentTabId(null);
-    }
-    toast({
-      title: "Successfully deleted tabs",
-      status: "error",
-      position: "bottom-right",
-    });
-  };
-
-  const clearTabs = () => {
-    setClearConfirm(!clearConfirm);
-    if (clearConfirm) {
-      setTitle("");
-      setTabs("");
-      setCurrentTabId(null);
-    }
-  };
+  const clearPreMadeTabsSearch = () => setSearchTerm("");
 
   return (
     <>
@@ -255,9 +158,9 @@ export default function Home() {
                       <SlTrash /> <Text ml={2}>Delete</Text>
                     </Button>
                   )}
-                  <Button variant="light-transparent" onClick={clearTabs} hidden={!canSaveTabs()}>
+                  <Button variant="light-transparent" onClick={handleClearConfirmation} hidden={!canSaveTabs()}>
                     <SlRefresh />
-                    <Text ml={2}>{clearConfirm ? "Are you sure?" : "Clear"}</Text>
+                    <Text ml={2}>{showClearConfirmation ? "Are you sure?" : "Clear"}</Text>
                   </Button>
                   <ReactToPrint
                     bodyClass="print-agreement"

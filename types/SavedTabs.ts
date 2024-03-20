@@ -1,4 +1,4 @@
-import { ITabs } from "./ITabs";
+import { ITabs } from "./Tabs";
 
 export interface ISavedTabs extends ITabs {
   id: number;
