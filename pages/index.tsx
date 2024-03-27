@@ -98,7 +98,7 @@ export default function Home() {
           name="description"
           content="Create tin whistle tabs from the musical alphabet and add customisations. Tin Whistle Tabs Generator made by Rich Powell."
         />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" />
       </Head>
 
       <HStack spacing={0} minHeight="100%" flexDirection={{ base: "column", xl: "row" }}>
