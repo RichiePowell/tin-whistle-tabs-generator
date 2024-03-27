@@ -24,7 +24,8 @@ interface ITabsCreatorContext {
   title: string;
   setTitle: Dispatch<SetStateAction<string>>;
   tabs: string;
-  setTabs: Dispatch<SetStateAction<string>>;
+  handleTabsChange: (tabs: string) => void;
+  parsedLines: ParsedLine[];
   currentTabId: number | null;
   setCurrentTabId: Dispatch<SetStateAction<number | null>>;
   isLyricsVisible: boolean;
@@ -40,11 +41,11 @@ interface ITabsCreatorContext {
   savedTabs: ISavedTabs[];
   setSavedTabs: Dispatch<SetStateAction<ISavedTabs[]>>;
   preMadeTabs: ITabs[];
-  updateSavedTabs: () => void;
+  handleSave: () => void;
   addNewSavedTabs: () => void;
-  loadSavedTabs: (id: number) => () => void;
-  changeTabs: (tabs: ITabs) => () => void;
-  deleteSavedTabs: (id: number) => () => void;
+  loadSavedTabs: (id: number) => void;
+  changeTabs: (tabs: ITabs) => void;
+  deleteSavedTabs: (id: number) => void;
   handleClearConfirmation: () => void;
   showClearConfirmation: boolean;
   canSaveTabs: () => boolean;
@@ -57,7 +58,8 @@ export const TabsCreatorContext = createContext<ITabsCreatorContext>({
   title: "",
   setTitle: () => {},
   tabs: "",
-  setTabs: () => {},
+  handleTabsChange: () => {},
+  parsedLines: [],
   currentTabId: null,
   setCurrentTabId: () => {},
   isLyricsVisible: false,
@@ -72,7 +74,7 @@ export const TabsCreatorContext = createContext<ITabsCreatorContext>({
   setHorizontalSpacing: () => {},
   savedTabs: [],
   setSavedTabs: () => {},
-  updateSavedTabs: () => {},
+  handleSave: () => {},
   addNewSavedTabs: () => {},
   preMadeTabs: [],
   loadSavedTabs: () => () => {},
@@ -89,16 +91,14 @@ export const TabsCreatorContext = createContext<ITabsCreatorContext>({
 export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [title, setTitle] = useState<string>("");
   const [tabs, setTabs] = useState<string>("");
+  const [parsedLines, setParsedLines] = useState<ParsedLine[]>([]);
   const [currentTabId, setCurrentTabId] = useState<number | null>(null);
   const [isLyricsVisible, setIsLyricsVisible] = useState<boolean>(true);
   const [isNotesVisible, setIsNotesVisible] = useState<boolean>(true);
   const [tabSize, setTabSize] = useState<number>(10);
   const [verticalSpacing, setVerticalSpacing] = useState<number>(30);
   const [horizontalSpacing, setHorizontalSpacing] = useState<number>(5);
-  const [savedTabs, setSavedTabs] = useState<ISavedTabs[]>(() => {
-    const saved = localStorage.getItem("savedTabs");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [savedTabs, setSavedTabs] = useState<ISavedTabs[]>([]);
   const [showClearConfirmation, setShowClearConfirmation] = useState<boolean>(false);
   const preMadeTabs = useMemo(
     () => [scarboroughFair, myHeartWillGoOn, hallelujah, greensleeves, drunkenSailor, concerningHobbits],
@@ -107,6 +107,12 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
   const toast = useToast();
 
   useEffect(() => setShowClearConfirmation(false), [title, tabs]);
+  useEffect(() => {
+    const saved = localStorage.getItem("savedTabs");
+    if (saved) {
+      setSavedTabs(JSON.parse(saved));
+    }
+  }, []);
 
   /**
    * Adds a new tab to the savedTabs array and updates the localStorage.
@@ -200,8 +206,68 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
   );
 
   /**
+   * Handles the tabs textarea input change.
+   */
+  const handleTabsChange = (tabs: string) => parseTabs(tabs);
+
+  /**
+   * Parse the tabs data and set the parsedLines state.
+   * @param tabs The tabs data to parse.
+   * @returns The parsed lines.
+   */
+  const parseTabs = useCallback((tabs: string) => {
+    const parseInput = tabs.split("\n").map((line) => {
+      if (line.startsWith("---")) {
+        return { type: "header", content: line.substring(3).trim() } as HeaderLine;
+      } else if (line.startsWith("--")) {
+        return { type: "lyrics", content: line.substring(2).trim().split(" ") } as LyricsLine;
+      } else if (line.startsWith("-")) {
+        return { type: "comment", content: line.substring(1).trim() } as CommentLine;
+      } else {
+        // Split the line by spaces to process individual groups
+        const content = line
+          .trim()
+          .split(/(\s+)/)
+          .filter((str) => str !== " ")
+          .flatMap(
+            (group) =>
+              group
+                .split("")
+                .map((character) => parseNoteDetail(character))
+                .filter((noteDetail) => noteDetail !== null) // Filter out nulls (invalid notes)
+          );
+
+        return {
+          type: "notes",
+          content,
+        } as NotesLine;
+      }
+    });
+
+    setParsedLines(parseInput);
+    setTabs(tabs);
+  }, []);
+
+  /**
+   * Parses a note string into a NoteDetail object.
+   * @param noteString The note string to parse.
+   * @returns The parsed note detail.
+   */
+  const parseNoteDetail = (noteString: string): NoteDetail | null => {
+    // This regex now strictly matches valid single notes, including sharp (#) and octave indicators (+ or ++)
+    const validNoteRegex = /^([abcdefg]#?\+{0,2}| $)/;
+    if (validNoteRegex.test(noteString)) {
+      return {
+        note: noteString.replace(/#|\+{1,2}/g, ""), // Remove sharp and octave indicators for simplicity
+        sharp: noteString.includes("#"),
+        octaveShift: (noteString.match(/\+/g) || []).length, // Count '+' for octave shift
+      };
+    }
+    return null; // Return null for non-matching, indicating an invalid note
+  };
+
+  /**
    * Changes the current tab's title and content to the selected pre-made tabs.
-   *
    * @param tabs
    */
   const changeTabs = (tabs: ITabs) => () => {
@@ -212,7 +278,6 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
 
   /**
    * Deletes the selected tab from the savedTabs array and updates the localStorage.
-   *
    * @param id
    */
   const deleteSavedTabs = useCallback(
@@ -234,6 +299,17 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
     },
     [currentTabId, toast]
   );
+
+  /**
+   * Handles the save button click event.
+   */
+  const handleSave = useCallback(() => {
+    if (currentTabId) {
+      updateSavedTabs();
+    } else {
+      addNewSavedTabs();
+    }
+  }, [currentTabId, updateSavedTabs, addNewSavedTabs]);
 
   /**
    * Clears the current tab's title and content.
@@ -281,7 +357,7 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
         title,
         setTitle,
         tabs,
-        setTabs,
+        handleTabsChange,
         currentTabId,
         setCurrentTabId,
         isLyricsVisible,
@@ -297,7 +373,7 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
         savedTabs,
         setSavedTabs,
         preMadeTabs,
-        updateSavedTabs,
+        handleSave,
         addNewSavedTabs,
         loadSavedTabs,
         changeTabs,
