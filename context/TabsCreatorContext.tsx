@@ -77,9 +77,9 @@ export const TabsCreatorContext = createContext<ITabsCreatorContext>({
   handleSave: () => {},
   addNewSavedTabs: () => {},
   preMadeTabs: [],
-  loadSavedTabs: () => () => {},
-  changeTabs: () => () => {},
-  deleteSavedTabs: () => () => {},
+  loadSavedTabs: () => {},
+  changeTabs: () => {},
+  deleteSavedTabs: () => {},
   handleClearConfirmation: () => false,
   showClearConfirmation: false,
   canSaveTabs: () => false,
@@ -195,7 +195,7 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
    * @param id
    */
   const loadSavedTabs = useCallback(
-    (id: number) => () => {
+    (id: number) => {
       const savedTabs = localStorage.getItem("savedTabs") ? JSON.parse(localStorage.getItem("savedTabs")!) : [];
       const tab = savedTabs.find((tab: { id: number }) => tab.id === id);
       setTitle(tab.title);
@@ -270,7 +270,7 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
    * Changes the current tab's title and content to the selected pre-made tabs.
    * @param tabs
    */
-  const changeTabs = (tabs: ITabs) => () => {
+  const changeTabs = (tabs: ITabs) => {
     setTitle(tabs.title);
     setTabs(tabs.tabs);
     setCurrentTabId(null);
@@ -281,7 +281,7 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
    * @param id
    */
   const deleteSavedTabs = useCallback(
-    (id: number) => () => {
+    (id: number) => {
       const savedTabs = localStorage.getItem("savedTabs") ? JSON.parse(localStorage.getItem("savedTabs")!) : [];
       const newSavedTabs = savedTabs.filter((tab: { id: number }) => tab.id !== id);
       localStorage.setItem("savedTabs", JSON.stringify(newSavedTabs));

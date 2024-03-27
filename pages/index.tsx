@@ -197,7 +197,7 @@ export default function Home() {
                     </Text>
                   </Button>
                   {currentTabId !== null && (
-                    <Button variant="light-transparent" onClick={deleteSavedTabs(currentTabId)} size="sm">
+                    <Button variant="light-transparent" onClick={() => deleteSavedTabs(currentTabId)} size="sm">
                       <DeleteIcon />{" "}
                       <Text ml={2} as="span">
                         Delete
@@ -364,7 +364,7 @@ export default function Home() {
                               role="group"
                             >
                               <Link
-                                onClick={loadSavedTabs(tab.id)}
+                                onClick={() => loadSavedTabs(tab.id)}
                                 p={1}
                                 px={55}
                                 width="100%"
@@ -394,7 +394,7 @@ export default function Home() {
                                   p={1}
                                   px={2}
                                   _hover={{ color: "gold" }}
-                                  onClick={deleteSavedTabs(tab.id)}
+                                  onClick={() => deleteSavedTabs(tab.id)}
                                   display="none"
                                   _groupHover={{ display: "inline-block" }}
                                 >
@@ -475,7 +475,7 @@ export default function Home() {
                               background={tab.title === title && tab.tabs === tabs ? "rgba(0,0,0,0.2)" : ""}
                             >
                               <Link
-                                onClick={changeTabs(tab)}
+                                onClick={() => changeTabs(tab)}
                                 p={1}
                                 px={55}
                                 width="100%"
