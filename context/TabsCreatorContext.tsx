@@ -357,6 +357,7 @@ export const TabsCreatorProvider: React.FC<PropsWithChildren> = ({ children }) =
         title,
         setTitle,
         tabs,
+        parsedLines,
         handleTabsChange,
         currentTabId,
         setCurrentTabId,

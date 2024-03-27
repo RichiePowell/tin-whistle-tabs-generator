@@ -290,12 +290,12 @@ export default function Home() {
                       isChecked={isNotesVisible}
                       onChange={toggleIsNotesVisible}
                     />
-                    <PanelSwitch
+                    {/* <PanelSwitch
                       id="lyrics-switch"
                       label="Show lyrics"
                       isChecked={isLyricsVisible}
                       onChange={toggleIsLyricsVisible}
-                    />
+                    /> */}
                   </SimpleGrid>
                 </TabPanel>
 
