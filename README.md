@@ -2,6 +2,9 @@
 
 A Next.js-based tool for generating tin whistle tabs quickly and easily, with a customizable interface using ChakraUI. This generator allows you to input musical notes and instantly visualize the corresponding tin whistle tabs. 
 
+<img width="1705" alt="Screenshot 2024-10-07 at 13 45 29" src="https://github.com/user-attachments/assets/1cbcad6e-8646-40af-a246-bb918c2a6a97">
+
+
 ## Features
 
 - **Preset Tabs**: Choose from several built-in tabs to get started quickly.
